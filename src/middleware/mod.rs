@@ -3,12 +3,10 @@ mod registry;
 mod builtin;
 mod external;
 
-pub use traits::*;
-pub use registry::*;
-pub use builtin::*;
 pub use external::*;
+pub use registry::*;
+pub use traits::*;
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// 中间件类型
