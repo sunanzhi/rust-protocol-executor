@@ -1,0 +1,60 @@
+default_timeout: 30
+default_retry_count: 3
+external_middleware_dir: "./middlewares"
+
+middleware_chains:
+  http:
+    pre_middleware:
+      - type: builtin
+        name: logger
+        config:
+          log_level: "info"
+      - type: builtin
+        name: validator
+        config:
+          validate_ssl: true
+      - type: external
+        name: rate_limiter
+        config:
+          timeout_secs: 10
+          rate_per_minute: 60
+      - type: external
+        name: auth_validator
+        config:
+          timeout_secs: 5
+          require_auth: true
+
+    post_middleware:
+      - type: external
+        name: response_formatter
+        config:
+          timeout_secs: 3
+          pretty_print: true
+      - type: builtin
+        name: metrics
+        config:
+          collect_detailed_metrics: true
+
+  websocket:
+    pre_middleware:
+      - type: builtin
+        name: logger
+      - type: external
+        name: rate_limiter
+        config:
+          rate_per_minute: 120
+
+    post_middleware:
+      - type: builtin
+        name: metrics
+
+protocol_configs:
+  http:
+    default_headers:
+      User-Agent: "cli-executor/1.0"
+      Accept: "application/json"
+
+  websocket:
+    default_headers:
+      User-Agent: "cli-executor/1.0"
+    ping_interval: 30
