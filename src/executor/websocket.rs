@@ -1,9 +1,8 @@
 use super::*;
-use futures::{SinkExt, StreamExt};
+use futures::StreamExt;
 use std::time::Instant;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream};
-use tokio_tungstenite::tungstenite::Utf8Bytes;
 
 pub struct WebSocketExecutor {
     base: BaseExecutor,
@@ -32,15 +31,15 @@ impl Executor for WebSocketExecutor {
         self.base.execute_pre_middleware(&mut context).await?;
 
         // 连接WebSocket
-        let mut ws_stream = self.connect_websocket(&context.target).await?;
+        let mut ws_stream = self.connect_websocket("x").await?;
 
         // 发送消息（如果有payload）
-        if let Some(payload) = &context.payload {
-            ws_stream
-                .send(Message::Text(Utf8Bytes::from(payload.clone())))
-                .await
-                .map_err(|e| anyhow::anyhow!("Failed to send message: {}", e))?;
-        }
+        // if let Some(payload) = &context.payload {
+        //     ws_stream
+        //         .send(Message::Text(Utf8Bytes::from(payload.clone())))
+        //         .await
+        //         .map_err(|e| anyhow::anyhow!("Failed to send message: {}", e))?;
+        // }
 
         // 接收消息
         let mut received_data = Vec::new();

@@ -47,17 +47,17 @@ impl MiddlewareRegistry {
 
         builtin_map.insert(
             "logger".to_string(),
-            Box::new(builtin::LoggerMiddleware::default()) as Box<dyn MiddlewareCreator>
+            Box::new(builtin::logger::LoggerMiddleware::default()) as Box<dyn MiddlewareCreator>
         );
 
         builtin_map.insert(
             "validator".to_string(),
-            Box::new(builtin::ValidatorMiddleware::default()) as Box<dyn MiddlewareCreator>
+            Box::new(builtin::validator::ValidatorMiddleware::default()) as Box<dyn MiddlewareCreator>
         );
 
         builtin_map.insert(
             "metrics".to_string(),
-            Box::new(builtin::MetricsMiddleware::default()) as Box<dyn MiddlewareCreator>
+            Box::new(builtin::metrics::MetricsMiddleware::default()) as Box<dyn MiddlewareCreator>
         );
 
         self.builtin_middlewares = Arc::new(builtin_map);

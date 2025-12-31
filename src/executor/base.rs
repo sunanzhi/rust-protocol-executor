@@ -26,7 +26,7 @@ impl BaseExecutor {
         context: &mut Context,
     ) -> Result<(), anyhow::Error> {
         for (middleware, _) in &self.middlewares {
-            middleware.before_execute(context).await?;
+            middleware.before(context).await?;
         }
         Ok(())
     }
@@ -38,7 +38,7 @@ impl BaseExecutor {
         context: &Context,
     ) -> Result<(), anyhow::Error> {
         for (middleware, _) in &self.middlewares {
-            middleware.after_execute(result, context).await?;
+            middleware.after(result, context).await?;
         }
         Ok(())
     }

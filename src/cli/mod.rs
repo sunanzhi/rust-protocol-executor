@@ -5,25 +5,19 @@ use std::path::PathBuf;
 #[command(name = "cli-executor")]
 #[command(about = "A CLI executor with middleware support", long_about = None)]
 pub struct Cli {
-    /// Protocol to use (http, websocket, etc.)
+    
+    /// Execution mode (single, workflow)
     #[arg(value_enum)]
-    pub protocol: Protocol,
-
-    /// Target URL or address
-    pub target: String,
-
+    pub mode: Mode,
+    
+    /// Execution file path
+    #[arg(short, long)]
+    pub path: PathBuf,
+    
     /// Path to configuration file
     #[arg(short, long)]
     pub config: Option<PathBuf>,
-
-    /// Request payload (JSON or raw)
-    #[arg(short, long)]
-    pub payload: Option<String>,
-
-    /// Request headers (key=value pairs)
-    #[arg(short = 'H', long, value_parser = parse_header)]
-    pub headers: Option<Vec<(String, String)>>,
-
+    
     /// Timeout in seconds
     #[arg(short, long, default_value = "30")]
     pub timeout: u64,
@@ -45,15 +39,12 @@ pub struct Cli {
     pub dry_run: bool,
 }
 
+
+
 #[derive(Clone, Debug, ValueEnum)]
-pub enum Protocol {
-    Http,
-    Https,
-    WebSocket,
-    Ws,
-    Wss,
-    Tcp,
-    Udp,
+pub enum Mode {
+    Single,
+    Workflow
 }
 
 fn parse_header(s: &str) -> Result<(String, String), String> {

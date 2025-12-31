@@ -6,10 +6,10 @@ use std::collections::HashMap;
 #[async_trait]
 pub trait Middleware: Send + Sync {
     /// 在执行前调用，可以修改上下文
-    async fn before_execute(&self, context: &mut Context) -> Result<(), anyhow::Error>;
+    async fn before(&self, context: &mut Context) -> Result<(), anyhow::Error>;
 
     /// 在执行后调用，可以修改结果
-    async fn after_execute(
+    async fn after(
         &self,
         result: &mut ExecutionResult,
         context: &Context,

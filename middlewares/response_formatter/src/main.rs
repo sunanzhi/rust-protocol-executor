@@ -55,7 +55,7 @@ fn main() {
     let mut input = String::new();
     io::stdin()
         .read_to_string(&mut input)
-        .expect("Failed to read stdin");
+        .expect("Failed to read from stdin");
 
     // 解析请求
     let request: Request = match serde_json::from_str(&input) {

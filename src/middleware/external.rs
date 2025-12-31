@@ -1,11 +1,12 @@
-use super::*;
 use crate::executor::{Context, ExecutionResult};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use base64::Engine;
+use base64::engine::general_purpose;
+use tokio::io::{AsyncWriteExt};
 use tokio::process::Command;
 
 /// 外部中间件通信协议
@@ -190,17 +191,17 @@ impl ExternalMiddleware {
 
 #[async_trait]
 impl super::Middleware for ExternalMiddleware {
-    async fn before_execute(&self, context: &mut Context) -> Result<(), anyhow::Error> {
+    async fn before(&self, context: &mut Context) -> Result<(), anyhow::Error> {
         let execution_id = uuid::Uuid::default().to_string();
 
         // 构建请求
         let request = MiddlewareRequest {
             action: "before".to_string(),
             execution_id: execution_id.clone(),
-            protocol: format!("{:?}", context.protocol),
-            target: context.target.clone(),
-            payload: context.payload.clone(),
-            headers: context.headers.clone(),
+            protocol: Default::default(),
+            target: Default::default(),
+            payload: Default::default(),
+            headers: Default::default(),
             metadata: serde_json::to_value(&context.metadata)?,
             config: None,
             timestamp: chrono::Utc::now().to_rfc3339(),
@@ -218,13 +219,13 @@ impl super::Middleware for ExternalMiddleware {
         }
 
         // 应用修改
-        if let Some(modified_payload) = response.modified_payload {
-            context.payload = Some(modified_payload);
-        }
+        // if let Some(modified_payload) = response.modified_payload {
+        //     context.payload = Some(modified_payload);
+        // }
 
-        if let Some(modified_headers) = response.modified_headers {
-            context.headers = modified_headers;
-        }
+        // if let Some(modified_headers) = response.modified_headers {
+        //     context.headers = modified_headers;
+        // }
 
         if let Some(modified_metadata) = response.modified_metadata {
             if let Ok(metadata_map) = serde_json::from_value::<HashMap<String, String>>(modified_metadata) {
@@ -242,7 +243,7 @@ impl super::Middleware for ExternalMiddleware {
         Ok(())
     }
 
-    async fn after_execute(
+    async fn after(
         &self,
         result: &mut ExecutionResult,
         context: &Context,
@@ -253,17 +254,17 @@ impl super::Middleware for ExternalMiddleware {
         let response_data = if result.data.is_empty() {
             None
         } else {
-            Some(base64::encode(&result.data))
+            Some(general_purpose::STANDARD_NO_PAD.encode(&result.data))
         };
 
         // 构建请求
         let request = MiddlewareRequest {
             action: "after".to_string(),
             execution_id: execution_id.clone(),
-            protocol: format!("{:?}", context.protocol),
-            target: context.target.clone(),
+            protocol: Default::default(),
+            target: Default::default(),
             payload: response_data,
-            headers: context.headers.clone(),
+            headers: Default::default(),
             metadata: serde_json::json!({
                 "original_metadata": context.metadata,
                 "execution_result": {
@@ -281,9 +282,8 @@ impl super::Middleware for ExternalMiddleware {
 
         // 应用修改
         if let Some(modified_payload) = response.modified_payload {
-            if let Ok(decoded) = base64::decode(modified_payload) {
-                result.data = decoded;
-            }
+            let encoded = general_purpose::STANDARD_NO_PAD.encode(modified_payload);
+            result.data = Vec::from(encoded);
         }
 
         if let Some(modified_metadata) = response.modified_metadata {

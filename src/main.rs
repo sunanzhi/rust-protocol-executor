@@ -5,12 +5,10 @@ mod middleware;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::Cli;
-use config::Config;
-use executor::ExecutorFactory;
-use middleware::MiddlewareRegistry;
-use std::path::PathBuf;
-use tracing::info;
+use crate::cli::Cli;
+use crate::config::Config;
+use crate::middleware::MiddlewareRegistry;
+use crate::executor::mode::ModeFactory;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -45,25 +43,21 @@ async fn main() -> Result<()> {
         }
     }
 
-    // 创建执行器工厂
-    let factory = ExecutorFactory::new(registry, config);
-
-    // 创建指定协议的执行器
-    let executor = factory.create_executor(&cli.protocol).await?;
+    // 创建模式执行器工厂
+    let mode = ModeFactory::new(registry, config).create_mode(&cli.mode).await?;
 
     // 准备执行上下文
     let context = executor::Context {
-        protocol: cli.protocol.clone(),
-        target: cli.target.clone(),
-        payload: cli.payload.clone(),
-        headers: cli.headers.clone().unwrap_or_default(),
-        timeout: cli.timeout,
-        retry_count: cli.retry_count,
+        mode: cli.mode.clone(),
+        path: cli.path.clone(),
+        retry_count: cli.retry_count.clone(),
         metadata: Default::default(),
+        variables: Default::default(),
+        step_list: Default::default(),
     };
 
     // 执行
-    let result = executor.execute(context).await?;
+    let result = mode.execute(context).await?;
 
     // 输出结果
     if cli.verbose {

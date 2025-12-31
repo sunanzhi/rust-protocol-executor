@@ -1,0 +1,56 @@
+variables:
+  - UUID: "12345678-1234-5678-1234-567812345678"
+  - ENV_API_TOKEN: "your_api_token_here"
+steps:
+  - meta:
+      id: "step_id"
+      name: "User Registration API"
+      description: "Create a new user account"
+      version: "1.0.0"
+      author: "DevOps Team"
+    protocol:
+      type: "http"
+      version: "1.1"
+    request:
+      url: "https://api.example.com/v1/users"
+      method: "POST"
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json"
+        User-Agent: "Rust-Protocol-Executor/1.0"
+        Authorization: "Bearer ${ENV_API_TOKEN}"
+        X-Request-ID: "${UUID}"
+      query_params:
+        source: "mobile"
+        campaign: "welcome_2024"
+      body:
+        mode: "json"
+        json:
+          username: "new_user_001"
+          email: "user001@example.com"
+          password: "secure_password_123"
+          profile:
+            age: 25
+            interests: ["coding", "rust"]
+    response:
+      status: 201
+      headers:
+        Content-Type: "application/json"
+      body_asserts:
+        - type: "json_path"
+          path: "$.status"
+          operator: "eq"
+          value: "success"
+        - type: "json_path"
+          path: "$.data.id"
+          operator: "exists"
+    options:
+      timeout_ms: 5000
+      retry:
+        count: 3
+        interval_ms: 1000
+        conditions:
+          - "status_code >= 500"
+          - "network_error"
+      follow_redirects: true
+      verify_ssl: true

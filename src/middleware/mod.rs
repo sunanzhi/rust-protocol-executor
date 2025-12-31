@@ -1,6 +1,6 @@
 mod traits;
-mod registry;
-mod builtin;
+pub mod registry;
+pub mod builtin;
 mod external;
 
 pub use external::*;

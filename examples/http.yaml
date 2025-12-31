@@ -1,0 +1,45 @@
+variables:
+  - userId: 1
+meta:
+  id: "step_id"
+  name: "User Registration API"
+  description: "Create a new user account"
+  version: "1.0.0"
+  author: "DevOps Team"
+protocol:
+  type: "http"       # 协议类型: http, https
+  version: "1.1"     # HTTP版本: 1.0, 1.1, 2.0
+request:
+  url: "https://jsonplaceholder.typicode.com/posts"
+  method: "POST"
+  headers:
+    Content-Type: "application/json"
+    Accept: "application/json"
+  body:
+    mode: "json"
+    json:
+      userId: ${userId}
+      title: "foo"
+      body: "bar"
+response:
+  status: 200
+  headers:
+    Content-Type: "application/json"
+  body_asserts:
+    - type: "json_path"
+      path: "$.status"
+      operator: "eq"
+      value: "success"
+    - type: "json_path"
+      path: "$.data.id"
+      operator: "exists"
+options:
+  timeout_ms: 5000         # 超时时间 (毫秒)
+  retry:
+    count: 3
+    interval_ms: 1000
+    conditions:
+      - "status_code >= 500"
+      - "network_error"
+  follow_redirects: true
+  verify_ssl: true

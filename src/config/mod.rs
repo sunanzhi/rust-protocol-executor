@@ -14,11 +14,8 @@ pub struct Config {
     /// Directory containing external middleware executables
     pub external_middleware_dir: Option<String>,
 
-    /// Pre-configured middleware chains for different protocols
+    /// Pre-configured middleware chains for different modes
     pub middleware_chains: HashMap<String, Vec<MiddlewareConfig>>,
-
-    /// Protocol-specific configurations
-    pub protocols: HashMap<String, ProtocolConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -54,39 +51,21 @@ impl Config {
         Ok(config)
     }
 
-    pub fn get_middleware_chain(&self, protocol: &str) -> Vec<MiddlewareConfig> {
+    pub fn get_middleware_chain(&self, mode: &str) -> Vec<MiddlewareConfig> {
         self.middleware_chains
-            .get(protocol)
+            .get(mode)
             .cloned()
             .unwrap_or_else(|| {
                 // 默认中间件链
                 let mut default_chain = Vec::new();
 
-                if protocol.starts_with("http") {
-                    default_chain.push(MiddlewareConfig {
-                        name: "logger".to_string(),
-                        r#type: MiddlewareType::Builtin("logger".to_string()),
-                        config: None,
-                        enabled: true,
-                        order: Some(1),
-                    });
-
-                    default_chain.push(MiddlewareConfig {
-                        name: "validator".to_string(),
-                        r#type: MiddlewareType::Builtin("validator".to_string()),
-                        config: None,
-                        enabled: true,
-                        order: Some(2),
-                    });
-                } else if protocol.starts_with("ws") {
-                    default_chain.push(MiddlewareConfig {
-                        name: "logger".to_string(),
-                        r#type: MiddlewareType::Builtin("logger".to_string()),
-                        config: None,
-                        enabled: true,
-                        order: Some(1),
-                    });
-                }
+                default_chain.push(MiddlewareConfig {
+                    name: "logger".to_string(),
+                    r#type: MiddlewareType::Builtin("logger".to_string()),
+                    config: None,
+                    enabled: true,
+                    order: Some(1),
+                });
 
                 default_chain
             })

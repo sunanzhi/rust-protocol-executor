@@ -1,5 +1,5 @@
 use super::*;
-use reqwest::{Client, Response};
+use reqwest::Client;
 use std::time::Instant;
 
 pub struct HttpExecutor {
@@ -27,17 +27,17 @@ impl Executor for HttpExecutor {
         self.base.execute_pre_middleware(&mut context).await?;
 
         // 构建HTTP请求
-        let mut request_builder = self.client.request(reqwest::Method::GET, &context.target);
+        let mut request_builder = self.client.request(reqwest::Method::GET, "x");
 
         // 添加headers
-        for (key, value) in &context.headers {
-            request_builder = request_builder.header(key, value);
-        }
-
-        // 添加payload（如果有）
-        if let Some(payload) = &context.payload {
-            request_builder = request_builder.body(payload.clone());
-        }
+        // for (key, value) in &context.headers {
+        //     request_builder = request_builder.header(key, value);
+        // }
+        // 
+        // // 添加payload（如果有）
+        // if let Some(payload) = &context.payload {
+        //     request_builder = request_builder.body(payload.clone());
+        // }
 
         // 发送请求
         let response = request_builder.send().await?;
