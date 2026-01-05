@@ -4,87 +4,19 @@ mod workflow;
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-use clap::ValueEnum;
-use serde::{Deserialize, Serialize};
 use crate::{cli, config};
+use crate::config::Config;
 use crate::executor::{BaseExecutor, Context, ExecutionResult};
 use crate::executor::mode::single::SingleMode;
 use crate::executor::mode::workflow::WorkflowMode;
+use crate::executor::protocol::BaseProtocol;
 use crate::middleware::MiddlewareRegistry;
 
 /// 模式解析结果
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ModeParseResult {
     pub variables: HashMap<String, String>,
-    pub step_list: Vec<ProtocolModel>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ProtocolModel {
-    id: String,
-    name: String,
-    description: String,
-    version: String,
-    author: String,
-    protocol: Protocol,
-    request: RequestModel
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RequestModel {
-
-}
-
-/// http请求模型
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HttpRequestModel {
-    url: String,
-    method: String,
-    headers: HashMap<String, String>,
-    body: String,
-    query: HashMap<String, String>,
-    path: HashMap<String, String>,
-    params: HashMap<String, Param>,
-}
-
-/// 参数
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Param {
-    name: String,
-    value: String,
-    r#type: ParamTypeEnum,
-}
-
-/// 参数类型枚举
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ParamTypeEnum {
-    String,
-    Integer,
-    Number,
-    Boolean,
-    Binary,
-    Byte,
-    Array,
-    Object,
-}
-
-trait RequestModelTrait {}
-
-impl RequestModel {}
-
-impl RequestModelTrait for HttpRequestModel {
-
-}
-
-#[derive(Clone, Debug, ValueEnum)]
-pub enum Protocol {
-    Http,
-    Https,
-    WebSocket,
-    Ws,
-    Wss,
-    Tcp,
-    Udp,
+    pub step_list: Vec<BaseProtocol>,
 }
 
 #[async_trait]
@@ -100,7 +32,7 @@ pub trait Mode: Send + Sync {
 #[derive(Clone)]
 pub struct ModeFactory {
     middleware_registry: Arc<MiddlewareRegistry>,
-    config: config::Config,
+    config: Config,
 }
 
 impl ModeFactory {

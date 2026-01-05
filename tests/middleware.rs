@@ -1,9 +1,8 @@
+mod common;
 #[cfg(test)]
-mod tests {
+mod middleware {
     use super::*;
     use std::path::PathBuf;
-    use tempfile::NamedTempFile;
-    use serde_json::json;
     use protocol_executor::cli::Mode::Single;
     use protocol_executor::executor::Context;
     use protocol_executor::middleware::builtin::single_transfer::SingleTransferMiddleware;
@@ -11,7 +10,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_before_success() {
-        // 创建临时文件
+        common::init();
         let path =PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples").join("http.yaml");
 
 
@@ -26,12 +25,13 @@ mod tests {
             variables: Default::default(),
         };
 
-
         // 执行测试
         let result = middleware.before(&mut context).await;
-        //
-        // // 验证结果
+
+        tracing::info!("{}", serde_json::to_string_pretty(&context.step_list[0]).unwrap());
+
+        // 验证结果
         assert!(result.is_ok());
-        // assert_eq!(context.step_list.len(), 1);
+        assert_eq!(context.step_list.len(), 1);
     }
 }

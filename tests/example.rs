@@ -14,4 +14,23 @@ mod tests {
     fn internal() {
         assert_eq!(4, internal_adder(2, 2));
     }
+
+    // 快速测试模板
+    #[cfg(test)]
+    mod yaml_to_obj {
+        use serde_yaml;
+
+        #[test]
+        fn test_simple_case() {
+            #[derive(Debug, serde::Deserialize)]
+            struct Simple {
+                value: String,
+            }
+
+            let yaml = "value: hello";
+            let obj: Simple = serde_yaml::from_str(yaml).unwrap();
+            tracing::info!("simple info: {:?}", obj);
+            assert_eq!(obj.value, "hello");
+        }
+    }
 }

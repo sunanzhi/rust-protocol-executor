@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fs;
 use async_trait::async_trait;
 use crate::executor::{Context, ExecutionResult};
-use crate::executor::mode::{RequestModel};
 use crate::middleware::{Middleware, MiddlewareCreator};
 
 /// 单一步骤模式转换
@@ -22,7 +21,7 @@ impl Middleware for SingleTransferMiddleware {
 
 
         // 解析请求
-        let request: RequestModel = match serde_json::from_str(&single_content) {
+        let request: crate::executor::protocol::BaseProtocol = match serde_yaml::from_str(&single_content) {
             Ok(req) => req,
             Err(e) => {
                 tracing::error!("Failed to parse request: {:?}", e);
@@ -30,7 +29,7 @@ impl Middleware for SingleTransferMiddleware {
             }
         };
 
-        // context.step_list.push(request);
+        context.step_list.push(request);
 
         Ok(())
     }

@@ -2,6 +2,8 @@ mod base;
 mod http;
 mod websocket;
 pub mod mode;
+pub mod protocol;
+pub mod enums;
 
 pub use base::*;
 pub use http::*;
@@ -11,19 +13,21 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
+use serde::Serialize;
 use crate::{cli, config};
-use crate::executor::mode::ProtocolModel;
+use enums::protocol::ProtocolEnum;
+use crate::executor::protocol::BaseProtocol;
 use crate::middleware::MiddlewareRegistry;
 
 /// 执行上下文
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Context {
     pub mode: cli::Mode,
     pub path: PathBuf,
     pub retry_count: u32,
     pub metadata: HashMap<String, String>,
     pub variables: HashMap<String, String>,
-    pub step_list: Vec<ProtocolModel>,
+    pub step_list: Vec<BaseProtocol>,
 }
 
 /// 执行结果
@@ -62,18 +66,18 @@ impl ExecutorFactory {
 
     pub async fn create_executor(
         &self,
-        protocol: &mode::Protocol,
+        protocol: &ProtocolEnum,
     ) -> Result<Box<dyn Executor>, anyhow::Error> {
         // 创建基础执行器 @todo 继承模式执行器
         let base_executor = BaseExecutor::new();
 
 
         match protocol {
-            mode::Protocol::Http | mode::Protocol::Https => {
+            ProtocolEnum::Http | ProtocolEnum::Https => {
                 let executor = HttpExecutor::new(base_executor);
                 Ok(Box::new(executor))
             }
-            mode::Protocol::WebSocket | mode::Protocol::Ws | mode::Protocol::Wss => {
+            ProtocolEnum::WebSocket | ProtocolEnum::Ws | ProtocolEnum::Wss => {
                 let executor = WebSocketExecutor::new(base_executor);
                 Ok(Box::new(executor))
             }

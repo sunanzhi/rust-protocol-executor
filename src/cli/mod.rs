@@ -1,5 +1,6 @@
 use clap::{ArgAction, Parser, ValueEnum};
 use std::path::PathBuf;
+use serde::Serialize;
 
 #[derive(Parser, Debug)]
 #[command(name = "cli-executor")]
@@ -41,7 +42,7 @@ pub struct Cli {
 
 
 
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, Serialize, ValueEnum)]
 pub enum Mode {
     Single,
     Workflow
